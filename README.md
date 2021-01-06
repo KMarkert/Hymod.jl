@@ -7,7 +7,7 @@ Simple package with functionality to calibrate/simulate river dischage with the 
 The Hymod package is not yet registered on the Julia pacakge repo. For now, you can install Hymod.jl from the GitHub repo.
 
 ```
-julia> Pkg.add("https://github.com/JuliaHydro/Hymod.jl")
+julia> Pkg.add(PackageSpec(url="https://github.com/JuliaHydro/Hymod.jl"))
 ```
 
 
