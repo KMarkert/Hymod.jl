@@ -1,15 +1,16 @@
-# HYMOD.jl
-HYMOD model implementation in Julia
+# Hymod.jl
+
+Hymod model implementation in Julia
 
 Simple package with functionality to calibrate/simulate river dischage with the Hymod model.
 
 ## Installation
-The Hymod package is not yet registered on the Julia pacakge repo. For now, you can install Hymod.jl from the GitHub repo.
+
+The Hymod package is not yet registered on the Julia package registery. For now, you can install Hymod.jl from the GitHub repo.
 
 ```
 julia> Pkg.add(PackageSpec(url="https://github.com/JuliaHydro/Hymod.jl"))
 ```
-
 
 ## Example use
 
@@ -71,3 +72,13 @@ testDf[:q] = simulate(testDf,precipCol=:precip, petCol=:pet; calPars...)
 When you plot the simulated results compared to observed values, you should get a plot similar to one below.
 
 ![](docs/src/img/example.png)
+
+## Interactive Examples
+
+A Docker image is provided for users that want to run a contained installation of the Hymod model interactively in the browser using [Pluto notebooks](https://github.com/fonsp/Pluto.jl). To start the Pluto server with Hymod, run the following command in your terminal:
+
+```
+$ docker run --rm -v julia -e 'import Pluto; Pluto.run()' -p 1234:1234 kmarkert/julia-hymod:latest
+```
+
+Next, paste the following URL into the "Open from file" prompt: https://github.com/KMarkert/Hymod.jl/blob/master/examples/hymod_interactive_parameters.jl
