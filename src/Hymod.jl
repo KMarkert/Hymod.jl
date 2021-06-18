@@ -98,9 +98,9 @@ function hargreaves(
     dtcol::Symbol = :datetime,
 )
 
-    dts = forcings[!, dtCol]
-    tmin = forcings[!, tminCol]
-    tmax = forcings[!, tmaxCol]
+    dts = forcings[!, dtcol]
+    tmin = forcings[!, tmincol]
+    tmax = forcings[!, tmaxcol]
 
     hargreaves(tmin, tmax, dts)
 end
@@ -158,8 +158,8 @@ function simulate(
     petcol::Symbol = :pet,
     kwargs...,
 )
-    p = forcings[:, precipCol]
-    e = forcings[:, petCol]
+    p = forcings[:, precipcol]
+    e = forcings[:, petcol]
 
     simulate(p, e; kwargs...)
 
@@ -190,7 +190,7 @@ function simulate(
     x_loss::Float64 = 0.0
     # Initialize slow tank state
     # value of 0 init flow works ok if calibration data starts with low discharge
-    x_slow::Float64 = initFlow ? (2.3503 / (ks * 22.5)) : 0.0
+    x_slow::Float64 = initflow ? (2.3503 / (ks * 22.5)) : 0.0
     # Initialize state(s) of quick tank(s)
     x_quick = zeros(Float64, 3)
     outflow = zeros(Float64, n_iters)
@@ -254,27 +254,27 @@ function calibrate(
 )
     # implementation of a monte carlo sampling
 
-    obs = forcing[!, obsCol]
+    obs = forcing[!, obscol]
 
     params = Dict{Symbol,Array}()
 
-    keyList = collect(keys(paramSpace))
+    keyList = collect(keys(paramspace))
 
     for k in keyList
-        p = paramSpace[k]
+        p = paramspace[k]
         minV = p[:lower]
         maxV = p[:upper]
-        params[k] = collect(rand(Uniform(minV, maxV), nSamples))
+        params[k] = collect(rand(Uniform(minV, maxV), nsamples))
     end
 
-    nIter = nSamples
+    nIter = nsamples
     losses = zeros(nIter)
 
     @info "Calibrating model with $nIter iterations..."
     for i = 1:nIter
         vals = [params[k][i] for k in keyList]
         pars = Dict(keyList .=> vals)
-        q = simulate(forcing, precipCol = :precip, petCol = :pet; pars...)
+        q = simulate(forcing, precipcol = :precip, petcol = :pet; pars...)
         # only test after one year of spinup
         losses[i] = nse(q[365:end], obs[365:end])
     end
@@ -286,7 +286,7 @@ function calibrate(
     finalLoss, idx = findmax(skipmissing(losses))
     vals = [params[k][idx] for k in keyList]
     finalPars = Dict(keyList .=> vals)
-    finalQ = simulate(forcing, precipCol = :precip, petCol = :pet; finalPars...)
+    finalQ = simulate(forcing, precipcol = :precip, petcol = :pet; finalPars...)
 
     if savefinal
         t = now()
