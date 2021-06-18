@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Home · Hymod.jl</title><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href>Hymod.jl</a></span></div><form class="docs-search" action="search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>Home</a><ul class="internal"><li><a class="tocitem" href="#Installation"><span>Installation</span></a></li><li><a class="tocitem" href="#Example-use"><span>Example use</span></a></li><li><a class="tocitem" href="#Interactive-Examples"><span>Interactive Examples</span></a></li></ul></li><li><a class="tocitem" href="api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Home</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Home</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/KMarkert/Hymod.jl/blob/master/docs/src/index.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Hymod.jl"><a class="docs-heading-anchor" href="#Hymod.jl">Hymod.jl</a><a id="Hymod.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Hymod.jl" title="Permalink"></a></h1><p>Hymod model implementation in Julia</p><p>Simple package with functionality to calibrate/simulate river discharge with the Hymod model.</p><h2 id="Installation"><a class="docs-heading-anchor" href="#Installation">Installation</a><a id="Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Installation" title="Permalink"></a></h2><p>The Hymod package is available through the Julia package system and can be installed using the following commands:.</p><pre><code class="nohighlight">julia&gt; using Pkg
+julia&gt; Pkg.add(&quot;Hymod&quot;)</code></pre><h2 id="Example-use"><a class="docs-heading-anchor" href="#Example-use">Example use</a><a id="Example-use-1"></a><a class="docs-heading-anchor-permalink" href="#Example-use" title="Permalink"></a></h2><pre><code class="language-julia">using HTTP, CSV, DataFrames, Hymod
+
+# define url to test data
+testDataUrl = &quot;https://raw.githubusercontent.com/JuliaHydro/Hymod.jl/master/test/data/test_forcings.csv&quot;
+# get response
+response = HTTP.get(testDataUrl)
+
+# read response as a DataFrame
+df = CSV.File(response.body) |&gt; DataFrame
+
+# create a column in the data frame for potential evapotranspiration
+df[!,:pet] = hargreaves(df,tmincol=:tmin,tmaxcol=:tmax,dtcol=:date)
+
+# get a random set of parameters
+pars = randomparams()
+
+# run a simulation
+q = simulate(df,precipcol=:precip, petcol=:pet; pars...)</code></pre><h3 id="Calibrating-a-model"><a class="docs-heading-anchor" href="#Calibrating-a-model">Calibrating a model</a><a id="Calibrating-a-model-1"></a><a class="docs-heading-anchor-permalink" href="#Calibrating-a-model" title="Permalink"></a></h3><pre><code class="language-julia">using Dates
+
+# define dates to calibrate
+calstart = Date(1986,1,1)
+calend = Date(2001,12,31)
+
+# filter dataframe between start and end calibration times
+caldf = filter(row -&gt; row[:date] &gt;= calstart &amp;&amp; row[:date] &lt;= calend, df)
+
+# get a dictionary of parameter ranges
+paramspace = Dict(
+    :cmax =&gt; Dict(:lower =&gt; 1.0, :upper =&gt; 100),
+    :bexp =&gt; Dict(:lower =&gt; 0.0, :upper =&gt; 2.0),
+    :alpha =&gt; Dict(:lower =&gt; 0.2, :upper =&gt; 0.99),
+    :ks =&gt; Dict(:lower =&gt; 0.01, :upper =&gt; 0.5),
+    :kq =&gt; Dict(:lower =&gt; 0.5, :upper =&gt; 1.2)
+)
+
+# set number of iterations to run calibration
+niterations = 5000
+
+# run calibration
+calq, calpars, calloss = calibrate(caldf,paramspace,niterations)
+
+# get the remainder of dataframe to test calibrated parameters
+testdf = filter(row -&gt; row[:date] &gt; calend, df)
+# run simulation with calibrated parameters
+testdf[!,:q] = simulate(testdf,precipcol=:precip, petcol=:pet; calpars...)
+</code></pre><p>When you plot the simulated results compared to observed values, you should get a plot similar to one below.</p><p><img src="assets/example.png" alt/></p><h2 id="Interactive-Examples"><a class="docs-heading-anchor" href="#Interactive-Examples">Interactive Examples</a><a id="Interactive-Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Interactive-Examples" title="Permalink"></a></h2><p>A Docker image is provided for users that want to run a contained installation of the Hymod model interactively in the browser using <a href="https://github.com/fonsp/Pluto.jl">Pluto notebooks</a>. To start the Pluto server with Hymod, run the following command in your terminal:</p><pre><code class="nohighlight">$ docker run --rm -v julia -e &#39;import Pluto; Pluto.run()&#39; -p 1234:1234 kmarkert/julia-hymod:latest</code></pre><p>Next, paste the following URL into the &quot;Open from file&quot; prompt: https://github.com/KMarkert/Hymod.jl/blob/master/examples/hymod<em>interactive</em>parameters.jl</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 18 June 2021 05:18">Friday 18 June 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
