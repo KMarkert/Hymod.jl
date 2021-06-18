@@ -12,7 +12,9 @@ using JSON
 export randomparams, hargreaves, simulate, calibrate
 
 """
-    Function to create a random set of parameters to use with Hymod.simulate()
+    randomparams()
+
+Function to create a random set of parameters as kwargs for Hymod.simulate()
 """
 function randomparams()
 
@@ -70,6 +72,12 @@ function precipexcess(
     return ER1, ER2, xn
 end
 
+
+"""
+    randomparams(x_slow::Float64, inflow::Float64, Rs::Float64)
+
+Linear reservoir routing function
+"""
 function linearreservoir(x_slow::Float64, inflow::Float64, Rs::Float64)
     # Linear reservoir routing
     x_slow = (1 - Rs) * x_slow + (1 - Rs) * inflow
@@ -77,6 +85,12 @@ function linearreservoir(x_slow::Float64, inflow::Float64, Rs::Float64)
     return x_slow, outflow
 end
 
+
+"""
+    hargreaves(forcings::DataFrame; tminCol::Symbol = :tmin, tmaxCol::Symbol = :tmax, dtCol::Symbol = :datetime)
+
+Function to calculate PET using Hargreves equation.
+"""
 function hargreaves(
     forcings::DataFrame;
     tminCol::Symbol = :tmin,
@@ -91,6 +105,11 @@ function hargreaves(
     hargreaves(tmin, tmax, dts)
 end
 
+"""
+    hargreaves(tmin::AbstractArray, tmax::AbstractArray, dts::AbstractArray)
+
+Function to calculate PET using Hargreves equation.
+"""
 function hargreaves(
     tmin::AbstractArray,
     tmax::AbstractArray,
@@ -99,6 +118,12 @@ function hargreaves(
     hargreaves.(tmin, tmax, dts)
 end
 
+
+"""
+    hargreaves(tmin::Real, tmax::Real, dts::Date)
+
+Function to calculate PET using Hargreves equation.
+"""
 function hargreaves(tmin::Real, tmax::Real, dts::Date)
     Gsc = 367
     lhov = 2.257
@@ -121,6 +146,12 @@ function hargreaves(tmin::Real, tmax::Real, dts::Date)
     return eto
 end
 
+
+"""
+    simulate(forcings::DataFrame; precipCol::Symbol = :precip, petCol::Symbol = :pet, kwargs...)
+
+Function to simulate discharge using Hymod rainfall-runoff model.
+"""
 function simulate(
     forcings::DataFrame;
     precipCol::Symbol = :precip,
@@ -134,6 +165,12 @@ function simulate(
 
 end
 
+
+"""
+    simulate(precip::AbstractArray, pet::AbstractArray; initFlow::Bool = true, cmax::Float64 = 1.0, bexp::Float64 = 0.0, alpha::Float64 = 0.2, ks::Float64 = 0.01, kq::Float64 = 0.5)
+
+Function to simulate discharge using Hymod rainfall-runoff model
+"""
 function simulate(
     precip::AbstractArray,
     pet::AbstractArray;
@@ -200,6 +237,12 @@ function simulate(
     return output
 end
 
+
+"""
+    calibrate(forcing::DataFrame, paramSpace::Dict, nSamples::Int64; precipCol::Symbol = :precip, petCol::Symbol = :pet, obsCol::Symbol = :obs, savefinal::Bool = false)
+
+Function to calibrate Hymod rainfall-runoff model
+"""
 function calibrate(
     forcing::DataFrame,
     paramSpace::Dict,
@@ -259,6 +302,11 @@ function calibrate(
 
 end
 
+"""
+    nse(y_true::AbstractArray, y_pred::AbstractArray)
+
+Function to calculate Nash-Sutcliffe model efficiency coefficient
+"""
 function nse(y_true::AbstractArray, y_pred::AbstractArray)
     # sum square difference between observed and simulated
     numerator = sum((y_true - y_pred) .^ 2)
