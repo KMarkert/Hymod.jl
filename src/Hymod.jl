@@ -74,28 +74,28 @@ end
 
 
 """
-    randomparams(x_slow::Float64, inflow::Float64, Rs::Float64)
+    randomparams(xslow::Float64, inflow::Float64, Rs::Float64)
 
 Linear reservoir routing function
 """
-function linearreservoir(x_slow::Float64, inflow::Float64, Rs::Float64)
+function linearreservoir(xslow::Float64, inflow::Float64, Rs::Float64)
     # Linear reservoir routing
-    x_slow = (1 - Rs) * x_slow + (1 - Rs) * inflow
-    outflow = (Rs / (1 - Rs)) * x_slow
-    return x_slow, outflow
+    xslow = (1 - Rs) * xslow + (1 - Rs) * inflow
+    outflow = (Rs / (1 - Rs)) * xslow
+    return xslow, outflow
 end
 
 
 """
-    hargreaves(forcings::DataFrame; tminCol::Symbol = :tmin, tmaxCol::Symbol = :tmax, dtCol::Symbol = :datetime)
+    hargreaves(forcings::DataFrame; tmincol::Symbol = :tmin, tmaxcol::Symbol = :tmax, dtcol::Symbol = :datetime)
 
 Function to calculate PET using Hargreves equation.
 """
 function hargreaves(
     forcings::DataFrame;
-    tminCol::Symbol = :tmin,
-    tmaxCol::Symbol = :tmax,
-    dtCol::Symbol = :datetime,
+    tmincol::Symbol = :tmin,
+    tmaxcol::Symbol = :tmax,
+    dtcol::Symbol = :datetime,
 )
 
     dts = forcings[!, dtCol]
@@ -148,14 +148,14 @@ end
 
 
 """
-    simulate(forcings::DataFrame; precipCol::Symbol = :precip, petCol::Symbol = :pet, kwargs...)
+    simulate(forcings::DataFrame; precipcol::Symbol = :precip, petcol::Symbol = :pet, kwargs...)
 
 Function to simulate discharge using Hymod rainfall-runoff model.
 """
 function simulate(
     forcings::DataFrame;
-    precipCol::Symbol = :precip,
-    petCol::Symbol = :pet,
+    precipcol::Symbol = :precip,
+    petcol::Symbol = :pet,
     kwargs...,
 )
     p = forcings[:, precipCol]
@@ -167,14 +167,14 @@ end
 
 
 """
-    simulate(precip::AbstractArray, pet::AbstractArray; initFlow::Bool = true, cmax::Float64 = 1.0, bexp::Float64 = 0.0, alpha::Float64 = 0.2, ks::Float64 = 0.01, kq::Float64 = 0.5)
+    simulate(precip::AbstractArray, pet::AbstractArray; initflow::Bool = true, cmax::Float64 = 1.0, bexp::Float64 = 0.0, alpha::Float64 = 0.2, ks::Float64 = 0.01, kq::Float64 = 0.5)
 
 Function to simulate discharge using Hymod rainfall-runoff model
 """
 function simulate(
     precip::AbstractArray,
     pet::AbstractArray;
-    initFlow::Bool = true,
+    initflow::Bool = true,
     cmax::Float64 = 1.0,
     bexp::Float64 = 0.0,
     alpha::Float64 = 0.2,
@@ -239,17 +239,17 @@ end
 
 
 """
-    calibrate(forcing::DataFrame, paramSpace::Dict, nSamples::Int64; precipCol::Symbol = :precip, petCol::Symbol = :pet, obsCol::Symbol = :obs, savefinal::Bool = false)
+    calibrate(forcing::DataFrame, paramspace::Dict, nsamples::Int64; precipcol::Symbol = :precip, petcol::Symbol = :pet, obscol::Symbol = :obs, savefinal::Bool = false)
 
 Function to calibrate Hymod rainfall-runoff model
 """
 function calibrate(
     forcing::DataFrame,
-    paramSpace::Dict,
-    nSamples::Int64;
-    precipCol::Symbol = :precip,
-    petCol::Symbol = :pet,
-    obsCol::Symbol = :obs,
+    paramspace::Dict,
+    nsamples::Int64;
+    precipcol::Symbol = :precip,
+    petcol::Symbol = :pet,
+    obscol::Symbol = :obs,
     savefinal::Bool = false,
 )
     # implementation of a monte carlo sampling
