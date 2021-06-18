@@ -2,14 +2,15 @@
 
 Hymod model implementation in Julia
 
-Simple package with functionality to calibrate/simulate river dischage with the Hymod model.
+Simple package with functionality to calibrate/simulate river discharge with the Hymod model.
 
 ## Installation
 
-The Hymod package is not yet registered on the Julia package registery. For now, you can install Hymod.jl from the GitHub repo.
+The Hymod package is available through the Julia package system and can be installed using the following commands:.
 
 ```
-julia> Pkg.add(PackageSpec(url="https://github.com/JuliaHydro/Hymod.jl"))
+julia> using Pkg
+julia> Pkg.add("Hymod")
 ```
 
 ## Example use
@@ -26,13 +27,13 @@ response = HTTP.get(testDataUrl)
 df = CSV.File(response.body) |> DataFrame
 
 # create a column in the data frame for potential evapotranspiration
-df[:pet] = hargreaves(df,tminCol=:tmin,tmaxCol=:tmax,dtCol=:date)
+df[!,:pet] = hargreaves(df,tmincol=:tmin,tmaxcol=:tmax,dtcol=:date)
 
 # get a random set of parameters
 pars = randomparams()
 
 # run a simulation
-q = simulate(df,precipCol=:precip, petCol=:pet; pars...)
+q = simulate(df,precipcol=:precip, petcol=:pet; pars...)
 ```
 
 ### Calibrating a model
@@ -41,14 +42,14 @@ q = simulate(df,precipCol=:precip, petCol=:pet; pars...)
 using Dates
 
 # define dates to calibrate
-calStart = Date(1986,1,1)
-calEnd = Date(2001,12,31)
+calstart = Date(1986,1,1)
+calend = Date(2001,12,31)
 
 # filter dataframe between start and end calibration times
-calDf = filter(row -> row[:date] >= calStart && row[:date] <= calEnd, df)
+caldf = filter(row -> row[:date] >= calstart && row[:date] <= calend, df)
 
 # get a dictionary of parameter ranges
-paramSpace = Dict(
+paramspace = Dict(
     :cmax => Dict(:lower => 1.0, :upper => 100),
     :bexp => Dict(:lower => 0.0, :upper => 2.0),
     :alpha => Dict(:lower => 0.2, :upper => 0.99),
@@ -57,21 +58,21 @@ paramSpace = Dict(
 )
 
 # set number of iterations to run calibration
-nIterations = 5000
+niterations = 5000
 
 # run calibration
-calQ, calPars, calLoss = calibrate(calDf,paramSpace,nIterations)
+calq, calpars, calloss = calibrate(caldf,paramspace,niterations)
 
 # get the remainder of dataframe to test calibrated parameters
-testDf = filter(row -> row[:date] > calEnd, df)
+testdf = filter(row -> row[:date] > calend, df)
 # run simulation with calibrated parameters
-testDf[:q] = simulate(testDf,precipCol=:precip, petCol=:pet; calPars...)
+testdf[!,:q] = simulate(testdf,precipcol=:precip, petcol=:pet; calpars...)
 
 ```
 
 When you plot the simulated results compared to observed values, you should get a plot similar to one below.
 
-![](docs/src/img/example.png)
+![](docs/src/assets/example.png)
 
 ## Interactive Examples
 
