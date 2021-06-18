@@ -22,5 +22,5 @@ makedocs(;
 
 deploydocs(;
     repo = "github.com/KMarkert/Hymod.jl.git",
-    devbranch = "main"
+    devbranch = "master"
 )
